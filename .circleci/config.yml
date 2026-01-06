@@ -1,0 +1,48 @@
+version: 2.1
+
+jobs:
+  deploy:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+
+      - add_ssh_keys:
+          fingerprints:
+            - "<<YOUR_SSH_KEY_FINGERPRINT>>"
+
+      - run:
+          name: Build & Deploy on Droplet
+          command: |
+            ssh -o StrictHostKeyChecking=no $DEPLOY_USER@$DEPLOY_HOST << 'EOF'
+              set -e
+
+              echo "📦 Pulling repo or updating"
+              if [ ! -d ~/circleci-do-deploy-demo ]; then
+                git clone https://github.com/YOUR_ORG/circleci-do-deploy-demo.git
+              fi
+
+              cd ~/circleci-do-deploy-demo
+              git pull
+
+              echo "🐳 Building Docker image"
+              docker build -t circleci-do-deploy-demo:latest .
+
+              echo "🧹 Removing old container"
+              docker rm -f circleci-do-deploy-demo || true
+
+              echo "🚀 Starting container"
+              docker run -d \
+                --name circleci-do-deploy-demo \
+                -p 3000:3000 \
+                -e APP_VERSION=${CIRCLE_SHA1} \
+                -e ENVIRONMENT=test \
+                circleci-do-deploy-demo:latest
+
+              echo "✅ Deployment complete"
+            EOF
+
+workflows:
+  deploy:
+    jobs:
+      - deploy
