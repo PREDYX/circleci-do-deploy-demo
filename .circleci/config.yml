@@ -14,7 +14,7 @@ jobs:
       - run:
           name: Build & Deploy on Droplet
           command: |
-            ssh -o StrictHostKeyChecking=no $DEPLOY_USER@$DEPLOY_HOST << 'EOF'
+            ssh -o StrictHostKeyChecking=no "$DEPLOY_USER@$DEPLOY_HOST" "
               set -e
 
               echo "📦 Pulling repo or updating"
