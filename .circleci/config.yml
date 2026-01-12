@@ -14,8 +14,15 @@ jobs:
       - run:
           name: Build & Deploy on Droplet
           command: |
-            ssh -o StrictHostKeyChecking=no "$DEPLOY_USER@$DEPLOY_HOST"
-              set -e
+            ssh \
+            -o StrictHostKeyChecking=no \
+            -o BatchMode=yes \
+            -o ServerAliveInterval=30 \
+            -o ServerAliveCountMax=4 \
+            "${DEPLOY_USER}@${DEPLOY_HOST}" \
+            "echo '[deploy] connected'; hostname; whoami"
+
+             set -e
 
               echo "📦 Pulling repo or updating"
               if [ ! -d ~/circleci-do-deploy-demo ]; then
